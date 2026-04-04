@@ -23,12 +23,14 @@ import {
   Zap,
 } from "lucide-react";
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = import.meta.env.VITE_API_URL;
+// const API_BASE = "http://localhost:5000";
 
 export function ResultsPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  
 
   const [audit, setAudit] = useState(location.state?.audit || null);
   const [fixedIssues, setFixedIssues] = useState({});

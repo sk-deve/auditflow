@@ -15,6 +15,8 @@ import {
 export function RunAuditPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const API_URL = import.meta.env.VITE_API_URL;
+  // const API_URL = "http://localhost:5000"
 
   const url = location.state?.url || "";
   const [progress, setProgress] = useState(10);
@@ -74,7 +76,7 @@ export function RunAuditPage() {
 
     async function runAudit() {
       try {
-        const response = await fetch("http://localhost:5000/api/audit", {
+        const response = await fetch(`${API_URL}/api/audit`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

@@ -18,6 +18,7 @@ export default function Home() {
   const navigate = useNavigate();
   const [websiteUrl, setWebsiteUrl] = useState("");
 
+
   const trustStats = [
     { label: "Avg. audit time", value: "12 sec" },
     { label: "Priority issues surfaced", value: "Top 3 instantly" },
