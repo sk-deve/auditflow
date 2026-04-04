@@ -8,6 +8,10 @@ import { PricingPage } from './pages/Pricing/PricingPage';
 import { ContactPage } from './pages/Contact/Contact';
 import { PrivacyPage } from './pages/Privacy/PrivacyPage';
 import { TermsPage } from './pages/Terms/TermsPage';
+import { FeaturesPage } from './pages/Features/Features';
+import { Footer } from './pages/Footer/Footer';
+import { SignupPage } from './pages/Signup/Signup';
+import { LoginPage } from './pages/Login/Login';
 
 const App = () => {
   return (
@@ -21,7 +25,11 @@ const App = () => {
          <Route path='/contact' element={<ContactPage />}/>
          <Route path='/privacy' element={<PrivacyPage />}/>
          <Route path='/terms' element={<TermsPage />}/>
+         <Route path='/features' element={<FeaturesPage />}/>
+         <Route path='/signup' element={<SignupPage />}/>
+         <Route path='/signin' element={<LoginPage />}/>
       </Routes>
+      <Footer />
     </>
   )
 }

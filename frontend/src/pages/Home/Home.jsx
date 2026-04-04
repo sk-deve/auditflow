@@ -440,34 +440,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="border-t border-slate-100 bg-white py-12">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-8 px-6 md:flex-row lg:px-8">
-          <div>
-            <div className="mb-2 flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-xs font-black text-white shadow-lg shadow-indigo-500/20">
-                WA
-              </div>
-              <span className="text-lg font-black text-slate-950">AuditFlow</span>
-            </div>
-            <p className="text-sm text-slate-500">
-              © 2026 AuditFlow. All rights reserved.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap gap-8">
-            {footerLinks.map((link) => (
-              <a
-                key={link}
-                href="#"
-                className="text-sm font-medium text-slate-600 transition-colors hover:text-indigo-600"
-              >
-                {link}
-              </a>
-            ))}
-          </div>
-        </div>
-      </footer>
+    
     </div>
   );
 }
