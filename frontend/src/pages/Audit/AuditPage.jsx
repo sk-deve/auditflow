@@ -17,8 +17,8 @@ import { Footer } from "../../components/Footer/Footer";
 export function RunAuditPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  // const API_URL = import.meta.env.VITE_API_URL;
-  const API_URL = "http://localhost:5000";
+  const API_URL = import.meta.env.VITE_API_URL;
+  // const API_URL = "http://localhost:5000";
 
   const url = location.state?.url || "";
   const [progress, setProgress] = useState(10);
