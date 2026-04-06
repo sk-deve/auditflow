@@ -3,6 +3,8 @@ import {
   Zap, ShieldCheck, BarChart3, Search, 
   MousePointer2, Gauge, LayoutDashboard, Globe 
 } from 'lucide-react';
+import Header from '../../components/Header/Header';
+import { Footer } from '../../components/Footer/Footer';
 
 export function FeaturesPage() {
   const mainFeatures = [
@@ -33,6 +35,10 @@ export function FeaturesPage() {
   ];
 
   return (
+    <>
+    {/* website header added here ======== */}
+     <Header />
+    {/* website header ended here  */}
     <div className="min-h-screen bg-[#F8FAFC] py-24 px-6 selection:bg-indigo-100">
       <div className="max-w-7xl mx-auto">
         
@@ -128,5 +134,9 @@ export function FeaturesPage() {
 
       </div>
     </div>
+
+    {/* website footer added here  */}
+    <Footer />
+    </>
   );
 }

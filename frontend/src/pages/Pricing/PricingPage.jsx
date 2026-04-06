@@ -1,5 +1,7 @@
 import React from 'react';
 import { Check, X, Zap, Shield, Star, ArrowRight } from 'lucide-react';
+import Header from '../../components/Header/Header';
+import { Footer } from '../../components/Footer/Footer';
 
 export function PricingPage() {
   const plans = [
@@ -41,6 +43,10 @@ export function PricingPage() {
   ];
 
   return (
+    <>
+    {/* Website header added here  */}
+    <Header />
+    {/* website header ended here  */}
     <div className="min-h-screen bg-[#F8FAFC] py-20 px-6">
       {/* Header Section */}
       <div className="max-w-4xl mx-auto text-center mb-16">
@@ -146,5 +152,9 @@ export function PricingPage() {
         </div>
       </div>
     </div>
+
+    {/* website footer added here  */}
+    <Footer />
+    </>
   );
 }

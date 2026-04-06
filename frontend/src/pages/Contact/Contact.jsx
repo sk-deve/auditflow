@@ -3,6 +3,8 @@ import {
   Mail, MessageSquare, ChevronDown, ChevronUp, 
   Send, HelpCircle, Globe, Zap, ShieldCheck 
 } from 'lucide-react';
+import Header from '../../components/Header/Header';
+import { Footer } from '../../components/Footer/Footer';
 
 export function ContactPage() {
   const [activeFaq, setActiveFaq] = useState(null);
@@ -31,6 +33,10 @@ export function ContactPage() {
   };
 
   return (
+    <>
+    {/* website header added here ====== */}
+     <Header />
+    {/* website header ended here =========== */}
     <div className="min-h-screen bg-[#F8FAFC] py-20 px-6 selection:bg-indigo-100">
       <div className="max-w-6xl mx-auto">
         
@@ -152,5 +158,9 @@ export function ContactPage() {
         </div>
       </div>
     </div>
+
+    {/* website footer added here ========== */}
+    <Footer />
+    </>
   );
 }

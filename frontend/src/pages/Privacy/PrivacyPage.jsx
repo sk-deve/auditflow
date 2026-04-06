@@ -1,5 +1,7 @@
 import React from 'react';
 import { Shield, Lock, Eye, Database, Mail } from 'lucide-react';
+import Header from '../../components/Header/Header';
+import { Footer } from '../../components/Footer/Footer';
 
 export function PrivacyPage() {
   const sections = [
@@ -21,6 +23,10 @@ export function PrivacyPage() {
   ];
 
   return (
+    <>
+    {/* website header added here ============ */}
+      <Header />
+    {/* website header ended here ================= */}
     <div className="min-h-screen bg-[#F8FAFC] py-20 px-6">
       <div className="max-w-3xl mx-auto">
         <div className="mb-12 text-center md:text-left">
@@ -55,5 +61,9 @@ export function PrivacyPage() {
         </div>
       </div>
     </div>
+
+    {/* website footer added here  */}
+    <Footer />
+    </>
   );
 }

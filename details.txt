@@ -1,0 +1,304 @@
+You are building the next phase of a SaaS product called Fixlytics (website audit + fix tool).
+
+The core audit system is already complete.
+
+Your task is to implement:
+
+* Authentication (signup/login)
+* Payment system
+* User dashboard
+* Subscription logic
+
+Focus on simplicity, scalability, and fast launch.
+
+---
+
+# 🎯 OBJECTIVE
+
+Turn the product into a monetizable SaaS where users can:
+
+* Create accounts
+* Run audits
+* Save reports
+* Upgrade to paid plans
+* Access a dashboard
+
+---
+
+# 1. AUTHENTICATION SYSTEM
+
+## Features:
+
+* Signup (email + password)
+* Login
+* Logout
+* Protected routes
+
+---
+
+## Requirements:
+
+### Signup:
+
+* Email
+* Password
+* Store hashed password (bcrypt)
+
+### Login:
+
+* Validate credentials
+* Return JWT token
+
+### Session:
+
+* Store JWT in localStorage or cookies
+* Protect dashboard routes
+
+---
+
+## Database (users collection):
+
+Fields:
+
+* id
+* email
+* password (hashed)
+* plan (free / pro)
+* auditsUsed (number)
+* createdAt
+
+---
+
+# 2. FREE PLAN LIMIT SYSTEM
+
+## Logic:
+
+Free users:
+
+* Max 2 audits per day
+
+---
+
+## Implementation:
+
+* Track auditsUsed per user
+* Reset daily OR track timestamps
+
+---
+
+## Behavior:
+
+If limit reached:
+Show:
+“Free limit reached. Upgrade to continue.”
+
+---
+
+# 3. PAYMENT SYSTEM (STRIPE)
+
+## Use Stripe (recommended)
+
+---
+
+## Features:
+
+* Monthly subscription ($9–$19)
+* Checkout page
+* Webhook handling
+
+---
+
+## Flow:
+
+1. User clicks “Upgrade”
+2. Redirect to Stripe Checkout
+3. User pays
+4. Stripe webhook updates user plan → “pro”
+
+---
+
+## Backend:
+
+### Create endpoint:
+
+POST /api/create-checkout-session
+
+### Webhook:
+
+* Listen for:
+
+  * checkout.session.completed
+* Update user.plan = "pro"
+
+---
+
+# 4. USER DASHBOARD
+
+## Create new page: /dashboard
+
+---
+
+## Sections:
+
+### 1. Overview
+
+* Current plan
+* Audits used
+* Remaining quota
+
+---
+
+### 2. Audit History
+
+* List of previous audits
+* URL
+* Score
+* Date
+
+---
+
+### 3. Actions
+
+* “Run new audit”
+* “View report”
+* “Delete report”
+
+---
+
+### 4. Upgrade Section
+
+* If free → show upgrade CTA
+* If pro → show “Manage subscription”
+
+---
+
+# 5. SAVE AUDITS SYSTEM
+
+## Database (audits collection):
+
+Fields:
+
+* id
+* userId
+* website URL
+* score
+* full report JSON
+* createdAt
+
+---
+
+## Behavior:
+
+* Save audit after completion
+* Link audit to user
+* Show in dashboard
+
+---
+
+# 6. ROLE-BASED ACCESS
+
+## Free users:
+
+* Limited audits/day
+* No history OR limited history
+* No export
+
+---
+
+## Pro users:
+
+* Unlimited audits
+* Full history
+* Export (PDF later)
+
+---
+
+# 7. UI PAGES TO BUILD
+
+## New pages:
+
+### /login
+
+* Email + password
+* Login button
+
+---
+
+### /signup
+
+* Email + password
+* Create account
+
+---
+
+### /dashboard
+
+* User overview
+* Audit history
+
+---
+
+### Upgrade modal / page
+
+* Pricing
+* Stripe checkout button
+
+---
+
+# 8. NAVIGATION UPDATE
+
+## Header:
+
+If NOT logged in:
+
+* Login
+* Get Started
+
+If logged in:
+
+* Dashboard
+* Logout
+
+---
+
+# 9. EMAIL SYSTEM (OPTIONAL NOW)
+
+* Send:
+
+  * Signup confirmation
+  * Payment success
+
+(Not required for MVP)
+
+---
+
+# 10. SECURITY BASICS
+
+* Hash passwords (bcrypt)
+* Validate inputs
+* Protect routes (JWT middleware)
+
+---
+
+# 🚫 DO NOT DO
+
+* Do NOT build complex roles
+* Do NOT overbuild dashboard
+* Do NOT add teams/orgs yet
+
+---
+
+# ✅ SUCCESS CRITERIA
+
+User should be able to:
+
+1. Sign up
+2. Run audit
+3. See limit
+4. Upgrade
+5. Access dashboard
+6. View past audits
+
+---
+
+Focus on speed, simplicity, and monetization readiness.

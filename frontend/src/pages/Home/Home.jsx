@@ -6,18 +6,18 @@ import {
   BarChart3,
   CheckCircle2,
   Clock3,
-  Gauge,
   Search,
   ShieldCheck,
-  Sparkles,
   Target,
   Zap,
 } from "lucide-react";
+import Header from "../../components/Header/Header";
+import { Footer } from "../../components/Footer/Footer";
 
 export default function Home() {
   const navigate = useNavigate();
   const [websiteUrl, setWebsiteUrl] = useState("");
-
+  const [homeError, setHomeError] = useState("");
 
   const trustStats = [
     { label: "Avg. audit time", value: "12 sec" },
@@ -39,12 +39,14 @@ export default function Home() {
     },
     {
       title: "We scan what matters",
-      description: "AuditFlow reviews clarity, trust, structure, CTA strength, and performance signals.",
+      description:
+        "AuditFlow reviews clarity, trust, structure, CTA strength, and performance signals.",
       number: "02",
     },
     {
       title: "Get a prioritized action plan",
-      description: "See what is hurting the site, why it matters, and what to fix first.",
+      description:
+        "See what is hurting the site, why it matters, and what to fix first.",
       number: "03",
     },
   ];
@@ -76,22 +78,27 @@ export default function Home() {
     },
   ];
 
-  const footerLinks = ["Pricing", "Contact", "Privacy", "Terms"];
-
   function handleAnalyze() {
-    if (!websiteUrl.trim()) {
-      alert("Please enter a website URL");
+    const cleanedUrl = websiteUrl.trim();
+
+    if (!cleanedUrl) {
+      setHomeError("Please enter a website URL");
       return;
     }
 
+    setHomeError("");
+
     navigate("/scan", {
-      state: { url: websiteUrl },
+      state: { url: cleanedUrl },
     });
   }
 
   return (
+    <>
+    {/* website header call here ================== */}
+       <Header />
+    {/* website header end here ============== */}
     <div className="min-h-screen bg-white text-slate-900 selection:bg-indigo-100 selection:text-indigo-700">
-      {/* HERO */}
       <section className="relative overflow-hidden border-b border-slate-100 bg-[linear-gradient(180deg,#ffffff_0%,#f8faff_100%)] pt-20 pb-24">
         <div
           className="absolute inset-0 opacity-50"
@@ -113,12 +120,12 @@ export default function Home() {
                 Optimization Engine
               </div>
 
-              <h1 className="mt-8 text-5xl font-black leading-[1.02] tracking-tight text-slate-950 sm:text-6xl lg:text-7xl">
-                See exactly what’s{" "}
+              <h1 className="mt-8 text-4xl font-black leading-[1.02] tracking-tight text-slate-950 sm:text-4xl lg:text-6xl">
+                Find what’s killing your{" "}
                 <span className="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
-                  hurting
+                  conversions
                 </span>{" "}
-                your website
+                — and fix it instantly
               </h1>
 
               <p className="mt-8 max-w-xl text-lg leading-8 text-slate-600">
@@ -135,7 +142,10 @@ export default function Home() {
                       type="url"
                       placeholder="Enter your website URL (e.g. example.com)"
                       value={websiteUrl}
-                      onChange={(e) => setWebsiteUrl(e.target.value)}
+                      onChange={(e) => {
+                        setWebsiteUrl(e.target.value);
+                        if (homeError) setHomeError("");
+                      }}
                       className="w-full bg-transparent py-4 text-base outline-none placeholder:text-slate-400"
                     />
                   </div>
@@ -149,6 +159,12 @@ export default function Home() {
                   </button>
                 </div>
               </div>
+
+              {homeError ? (
+                <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                  {homeError}
+                </div>
+              ) : null}
 
               <div className="mt-8 flex flex-wrap gap-3">
                 <div className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-200">
@@ -166,7 +182,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* HERO PREVIEW */}
             <div className="relative">
               <div className="absolute -inset-6 rounded-[3rem] bg-gradient-to-r from-indigo-500/15 to-violet-500/15 blur-3xl" />
 
@@ -217,7 +232,9 @@ export default function Home() {
                       >
                         <div className="flex items-center justify-between gap-4">
                           <div className="flex items-center gap-3">
-                            <div className={`h-2.5 w-2.5 rounded-full ${item.dot}`} />
+                            <div
+                              className={`h-2.5 w-2.5 rounded-full ${item.dot}`}
+                            />
                             <div>
                               <p className="text-sm font-semibold text-white">
                                 {item.title}
@@ -246,21 +263,24 @@ export default function Home() {
             </div>
           </div>
 
-          {/* TRUST STRIP */}
           <div className="mt-16 grid gap-4 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:grid-cols-3">
             {trustStats.map((item) => (
-              <div key={item.label} className="rounded-2xl bg-slate-50 px-5 py-5">
+              <div
+                key={item.label}
+                className="rounded-2xl bg-slate-50 px-5 py-5"
+              >
                 <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">
                   {item.label}
                 </p>
-                <p className="mt-2 text-xl font-black text-slate-950">{item.value}</p>
+                <p className="mt-2 text-xl font-black text-slate-950">
+                  {item.value}
+                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* PROBLEM */}
       <section className="bg-slate-50 py-24">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:items-start">
@@ -270,7 +290,9 @@ export default function Home() {
               </p>
               <h2 className="mt-4 text-4xl font-black leading-tight tracking-tight text-slate-950 sm:text-5xl">
                 You don’t have a traffic problem.{" "}
-                <span className="text-slate-400">You have a conversion problem.</span>
+                <span className="text-slate-400">
+                  You have a conversion problem.
+                </span>
               </h2>
               <p className="mt-6 text-lg leading-8 text-slate-600">
                 Many websites look polished on the surface but still underperform.
@@ -298,7 +320,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* STEPS */}
       <section className="bg-white py-24">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
@@ -309,7 +330,8 @@ export default function Home() {
               Get a complete audit in under 30 seconds
             </h2>
             <p className="mt-5 text-lg leading-8 text-slate-600">
-              Fast enough to use immediately. Clear enough to take action right away.
+              Fast enough to use immediately. Clear enough to take action right
+              away.
             </p>
           </div>
 
@@ -334,7 +356,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* WHY DIFFERENT */}
       <section className="relative overflow-hidden bg-slate-950 py-24 text-white">
         <div className="absolute inset-0 opacity-20">
           <div
@@ -370,7 +391,9 @@ export default function Home() {
                 <div className="mb-6 flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-500/15 ring-1 ring-indigo-400/15">
                   {benefit.icon}
                 </div>
-                <h3 className="text-xl font-black text-white">{benefit.title}</h3>
+                <h3 className="text-xl font-black text-white">
+                  {benefit.title}
+                </h3>
                 <p className="mt-4 text-sm leading-7 text-slate-400">
                   {benefit.description}
                 </p>
@@ -380,7 +403,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FINAL CTA */}
       <section className="bg-white py-24">
         <div className="mx-auto max-w-6xl px-6 lg:px-8">
           <div className="relative overflow-hidden rounded-[3rem] border border-slate-200 bg-[radial-gradient(circle_at_top,#312e81_0%,#111827_65%)] px-8 py-14 text-center shadow-[0_25px_80px_rgba(15,23,42,0.12)] sm:px-12 sm:py-16">
@@ -409,7 +431,10 @@ export default function Home() {
                   type="url"
                   placeholder="Paste your website URL"
                   value={websiteUrl}
-                  onChange={(e) => setWebsiteUrl(e.target.value)}
+                  onChange={(e) => {
+                    setWebsiteUrl(e.target.value);
+                    if (homeError) setHomeError("");
+                  }}
                   className="flex-1 rounded-[1.2rem] px-5 py-4 text-slate-900 outline-none placeholder:text-slate-400"
                 />
                 <button
@@ -420,6 +445,12 @@ export default function Home() {
                   <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
+
+              {homeError ? (
+                <div className="mx-auto mt-4 max-w-2xl rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                  {homeError}
+                </div>
+              ) : null}
 
               <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-sm text-indigo-100/70">
                 <span className="inline-flex items-center gap-2">
@@ -439,9 +470,11 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-    
     </div>
+
+    {/* website footer call here =============== */}
+    <Footer />
+    </>
   );
 }
 

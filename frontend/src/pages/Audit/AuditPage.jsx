@@ -11,17 +11,20 @@ import {
   Activity,
   ShieldCheck,
 } from "lucide-react";
+import Header from "../../components/Header/Header";
+import { Footer } from "../../components/Footer/Footer";
 
 export function RunAuditPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const API_URL = import.meta.env.VITE_API_URL;
-  // const API_URL = "http://localhost:5000"
+  // const API_URL = import.meta.env.VITE_API_URL;
+  const API_URL = "http://localhost:5000";
 
   const url = location.state?.url || "";
   const [progress, setProgress] = useState(10);
   const [activeStep, setActiveStep] = useState(0);
   const [error, setError] = useState("");
+  const [errorCode, setErrorCode] = useState("");
 
   const scanSteps = useMemo(
     () => [
@@ -56,6 +59,15 @@ export function RunAuditPage() {
     []
   );
 
+  function getAuthToken() {
+    return (
+      localStorage.getItem("token") ||
+      localStorage.getItem("authToken") ||
+      localStorage.getItem("accessToken") ||
+      ""
+    );
+  }
+
   useEffect(() => {
     if (!url) {
       navigate("/");
@@ -76,18 +88,43 @@ export function RunAuditPage() {
 
     async function runAudit() {
       try {
+        setError("");
+        setErrorCode("");
+
+        const token = getAuthToken();
+
+        const headers = {
+          "Content-Type": "application/json",
+        };
+
+        if (token) {
+          headers.Authorization = `Bearer ${token}`;
+        }
+
         const response = await fetch(`${API_URL}/api/audit`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers,
           body: JSON.stringify({ url }),
         });
 
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
 
         if (!response.ok) {
-          throw new Error(data.error || "Audit failed");
+          if (response.status === 401 && data.code === "AUTH_REQUIRED") {
+            setErrorCode("AUTH_REQUIRED");
+            throw new Error("Please log in to run an audit.");
+          }
+
+          if (
+            response.status === 403 &&
+            data.code === "FREE_PLAN_LIMIT_REACHED"
+          ) {
+            setErrorCode("FREE_PLAN_LIMIT_REACHED");
+            throw new Error("Free limit reached. Upgrade to continue.");
+          }
+
+          setErrorCode("GENERIC_ERROR");
+          throw new Error(data.message || data.error || "Audit failed");
         }
 
         setProgress(100);
@@ -110,7 +147,7 @@ export function RunAuditPage() {
     runAudit();
 
     return () => clearInterval(progressTimer);
-  }, [url, navigate, scanSteps.length]);
+  }, [url, navigate, scanSteps.length, API_URL]);
 
   const renderedSteps = scanSteps.map((label, index) => {
     let status = "pending";
@@ -130,26 +167,154 @@ export function RunAuditPage() {
     progress >= 100 ? 0 : Math.max(2, Math.ceil((100 - progress) / 12));
 
   if (error) {
+    const isAuthError = errorCode === "AUTH_REQUIRED";
+    const isLimitError = errorCode === "FREE_PLAN_LIMIT_REACHED";
+
     return (
-      <div className="min-h-screen bg-[#F6F8FC] flex items-center justify-center p-6">
-        <div className="w-full max-w-xl rounded-[2.5rem] border border-red-100 bg-white p-10 text-center shadow-[0_24px_80px_rgba(239,68,68,0.08)]">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-50 text-red-500">
-            <span className="text-2xl font-bold">!</span>
+      <>
+      <div className="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#f5f7fb_100%)] flex items-center justify-center p-6">
+        <div className="w-full max-w-2xl overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.08)]">
+          <div className="bg-[linear-gradient(90deg,#6366f1_0%,#8b5cf6_100%)] px-8 py-6 text-white">
+            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/80">
+              AuditFlow Access
+            </p>
+
+            <h1 className="mt-3 text-3xl font-black tracking-tight">
+              {isAuthError
+                ? "Log in to run your audit"
+                : isLimitError
+                ? "Free plan limit reached"
+                : "Unable to continue"}
+            </h1>
+
+            <p className="mt-3 max-w-xl text-sm leading-7 text-white/85">
+              {isAuthError
+                ? "Create a free account to unlock 2 audits per day, save reports, and track your audit history."
+                : isLimitError
+                ? "You’ve used your 2 free audits for today. Upgrade your plan to continue running more website audits."
+                : error}
+            </p>
           </div>
-          <h1 className="text-2xl font-black text-slate-900">Analysis Halted</h1>
-          <p className="mt-4 leading-relaxed text-slate-500">{error}</p>
-          <button
-            onClick={() => navigate("/")}
-            className="mt-8 w-full rounded-2xl bg-slate-950 py-4 text-sm font-bold text-white transition-all hover:bg-slate-800"
-          >
-            Try Another URL
-          </button>
+
+          <div className="p-8 md:p-10">
+            <div className="rounded-[2rem] border border-slate-200 bg-slate-50 p-6">
+              {isAuthError ? (
+                <>
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                      <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">
+                        Free plan
+                      </p>
+                      <p className="mt-2 text-lg font-black text-slate-950">
+                        2 audits/day
+                      </p>
+                    </div>
+
+                    <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                      <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">
+                        Save reports
+                      </p>
+                      <p className="mt-2 text-lg font-black text-slate-950">
+                        Included
+                      </p>
+                    </div>
+
+                    <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                      <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">
+                        Dashboard
+                      </p>
+                      <p className="mt-2 text-lg font-black text-slate-950">
+                        Coming next
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                    <button
+                      onClick={() => navigate("/login")}
+                      className="inline-flex w-full items-center justify-center rounded-2xl bg-slate-950 px-6 py-4 text-sm font-bold text-white transition hover:bg-slate-800"
+                    >
+                      Log In
+                    </button>
+
+                    <button
+                      onClick={() => navigate("/register")}
+                      className="inline-flex w-full items-center justify-center rounded-2xl bg-indigo-600 px-6 py-4 text-sm font-bold text-white transition hover:bg-indigo-700"
+                    >
+                      Create Free Account
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={() => navigate("/")}
+                    className="mt-3 inline-flex w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-6 py-4 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
+                  >
+                    Back Home
+                  </button>
+                </>
+              ) : isLimitError ? (
+                <>
+                  <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-5">
+                    <p className="text-[11px] font-black uppercase tracking-[0.16em] text-amber-600">
+                      Free plan usage
+                    </p>
+                    <p className="mt-2 text-sm leading-7 text-amber-900">
+                      Your free account includes 2 audits per day. Upgrade to
+                      continue scanning without waiting for the daily reset.
+                    </p>
+                  </div>
+
+                  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                    <button
+                      onClick={() => navigate("/pricing")}
+                      className="inline-flex w-full items-center justify-center rounded-2xl bg-slate-950 px-6 py-4 text-sm font-bold text-white transition hover:bg-slate-800"
+                    >
+                      Upgrade Plan
+                    </button>
+
+                    <button
+                      onClick={() => navigate("/")}
+                      className="inline-flex w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-6 py-4 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
+                    >
+                      Back Home
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-5">
+                    <p className="text-[11px] font-black uppercase tracking-[0.16em] text-red-600">
+                      Scan error
+                    </p>
+                    <p className="mt-2 text-sm leading-7 text-red-900">
+                      {error}
+                    </p>
+                  </div>
+
+                  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                    <button
+                      onClick={() => navigate("/")}
+                      className="inline-flex w-full items-center justify-center rounded-2xl bg-slate-950 px-6 py-4 text-sm font-bold text-white transition hover:bg-slate-800"
+                    >
+                      Try Another URL
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </div>
+      
+      </>
     );
   }
 
   return (
+    <>
+     {/* add website header here  */}
+       <Header />
+      {/* header end here  */}
     <div className="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#f5f7fb_100%)] text-slate-900 selection:bg-indigo-100">
       <div className="mx-auto max-w-6xl px-6 py-10 lg:py-16">
         <div className="overflow-hidden rounded-[2.75rem] border border-slate-200 bg-white shadow-[0_30px_100px_rgba(15,23,42,0.08)]">
@@ -159,7 +324,6 @@ export function RunAuditPage() {
             <div className="absolute left-10 top-20 h-32 w-32 rounded-full bg-violet-100 blur-3xl opacity-50" />
 
             <div className="relative px-8 pb-10 pt-12 md:px-12 md:pt-14">
-              {/* Hero */}
               <div className="mx-auto max-w-3xl text-center">
                 <div className="relative mx-auto flex h-20 w-20 items-center justify-center rounded-[1.75rem] bg-slate-950 text-white shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
                   <Loader2 className="h-9 w-9 animate-spin opacity-90" />
@@ -184,7 +348,6 @@ export function RunAuditPage() {
                 </p>
               </div>
 
-              {/* Primary progress card */}
               <div className="mt-12 rounded-[2rem] border border-slate-200 bg-slate-50/80 p-6 md:p-8">
                 <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
                   <div>
@@ -235,7 +398,11 @@ export function RunAuditPage() {
                     <InfoTile
                       icon={<Clock3 className="h-4 w-4 text-indigo-600" />}
                       label="Estimated time left"
-                      value={progress >= 100 ? "Finalizing..." : `${estimatedSecondsRemaining}s`}
+                      value={
+                        progress >= 100
+                          ? "Finalizing..."
+                          : `${estimatedSecondsRemaining}s`
+                      }
                     />
                     <InfoTile
                       icon={<Activity className="h-4 w-4 text-indigo-600" />}
@@ -247,7 +414,6 @@ export function RunAuditPage() {
                 </div>
               </div>
 
-              {/* Step list */}
               <div className="mt-10 grid gap-4">
                 {renderedSteps.map((step, idx) => (
                   <div
@@ -328,7 +494,6 @@ export function RunAuditPage() {
             </div>
           </div>
 
-          {/* Lower info panels */}
           <div className="grid gap-px border-t border-slate-100 bg-slate-100 md:grid-cols-2">
             <div className="bg-white p-8 md:p-10">
               <div className="mb-6 flex items-center gap-2">
@@ -404,6 +569,9 @@ export function RunAuditPage() {
         }}
       />
     </div>
+    {/* footer call here  */}
+    <Footer />
+    </>
   );
 }
 

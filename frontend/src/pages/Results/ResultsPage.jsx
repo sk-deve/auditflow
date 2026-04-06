@@ -22,15 +22,16 @@ import {
   X,
   Zap,
 } from "lucide-react";
+import Header from "../../components/Header/Header";
+import { Footer } from "../../components/Footer/Footer";
 
-const API_BASE = import.meta.env.VITE_API_URL;
-// const API_BASE = "http://localhost:5000";
+// const API_BASE = import.meta.env.VITE_API_URL;
+const API_BASE = "http://localhost:5000"
 
 export function ResultsPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  
 
   const [audit, setAudit] = useState(location.state?.audit || null);
   const [fixedIssues, setFixedIssues] = useState({});
@@ -38,15 +39,42 @@ export function ResultsPage() {
   const [showFullReport, setShowFullReport] = useState(false);
   const [openModalIssue, setOpenModalIssue] = useState(null);
   const [loadingSharedReport, setLoadingSharedReport] = useState(false);
-  const [shareId, setShareId] = useState(location.state?.audit?.share?.reportId || null);
+  const [shareId, setShareId] = useState(
+    location.state?.audit?.share?.reportId || null
+  );
   const [isSavingShare, setIsSavingShare] = useState(false);
 
   const reportQueryId = searchParams.get("report");
+
+  function getAuthToken() {
+    return (
+      localStorage.getItem("token") ||
+      localStorage.getItem("authToken") ||
+      localStorage.getItem("accessToken") ||
+      ""
+    );
+  }
+
+  function getAuthHeaders(includeJson = false) {
+    const token = getAuthToken();
+    const headers = {};
+
+    if (includeJson) {
+      headers["Content-Type"] = "application/json";
+    }
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    return headers;
+  }
 
   useEffect(() => {
     if (audit || !reportQueryId) return;
 
     let active = true;
+
     const fetchSharedReport = async () => {
       try {
         setLoadingSharedReport(true);
@@ -54,7 +82,7 @@ export function ResultsPage() {
         const data = await res.json();
 
         if (!res.ok) {
-          throw new Error(data.error || "Unable to load shared report");
+          throw new Error(data.message || data.error || "Unable to load shared report");
         }
 
         if (active) {
@@ -77,7 +105,7 @@ export function ResultsPage() {
     return () => {
       active = false;
     };
-  }, [audit, reportQueryId]);
+  }, [audit, reportQueryId, API_BASE]);
 
   useEffect(() => {
     if (!audit || shareId || isSavingShare) return;
@@ -90,16 +118,14 @@ export function ResultsPage() {
 
         const res = await fetch(`${API_BASE}/api/report/save`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: getAuthHeaders(true),
           body: JSON.stringify({ audit }),
         });
 
         const data = await res.json();
 
         if (!res.ok) {
-          throw new Error(data.error || "Unable to save report");
+          throw new Error(data.message || data.error || "Unable to save report");
         }
 
         if (active) {
@@ -122,7 +148,7 @@ export function ResultsPage() {
     return () => {
       active = false;
     };
-  }, [audit, shareId, isSavingShare]);
+  }, [audit, shareId, isSavingShare, API_BASE]);
 
   if (!audit && loadingSharedReport) {
     return (
@@ -186,15 +212,20 @@ export function ResultsPage() {
   const progressRemaining = Math.max(progressTotal - fixedCount, 0);
 
   const getToneBadge = (value) => {
-    if (value === "excellent") return "bg-emerald-50 text-emerald-700 border border-emerald-200";
-    if (value === "good") return "bg-blue-50 text-blue-700 border border-blue-200";
-    if (value === "average") return "bg-amber-50 text-amber-700 border border-amber-200";
+    if (value === "excellent")
+      return "bg-emerald-50 text-emerald-700 border border-emerald-200";
+    if (value === "good")
+      return "bg-blue-50 text-blue-700 border border-blue-200";
+    if (value === "average")
+      return "bg-amber-50 text-amber-700 border border-amber-200";
     return "bg-rose-50 text-rose-700 border border-rose-200";
   };
 
   const getSeverityBadge = (severity) => {
-    if (severity === "high") return "bg-rose-50 text-rose-700 border border-rose-200";
-    if (severity === "medium") return "bg-amber-50 text-amber-700 border border-amber-200";
+    if (severity === "high")
+      return "bg-rose-50 text-rose-700 border border-rose-200";
+    if (severity === "medium")
+      return "bg-amber-50 text-amber-700 border border-amber-200";
     return "bg-emerald-50 text-emerald-700 border border-emerald-200";
   };
 
@@ -296,12 +327,13 @@ export function ResultsPage() {
         : `${API_BASE}/api/report/pdf`;
 
       const options = currentShareId
-        ? { method: "GET" }
+        ? {
+            method: "GET",
+            headers: getAuthHeaders(false),
+          }
         : {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: getAuthHeaders(true),
             body: JSON.stringify({ audit }),
           };
 
@@ -309,7 +341,7 @@ export function ResultsPage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Unable to generate PDF");
+        throw new Error(data.message || data.error || "Unable to generate PDF");
       }
 
       const blob = await res.blob();
@@ -339,7 +371,17 @@ export function ResultsPage() {
     setOpenModalIssue(null);
   };
 
+  const rerunAudit = () => {
+    navigate("/scan", {
+      state: { url: audit.url || "" },
+    });
+  };
+
   return (
+    <>
+    {/* website header added here  */}
+    <Header />
+    {/* website header ended here  */}
     <div className="min-h-screen bg-[#F5F7FB] text-slate-900 pb-24">
       <div className="mx-auto max-w-7xl px-6 pt-10 lg:px-8">
         <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -351,7 +393,10 @@ export function ResultsPage() {
               {String(audit.url || "").replace(/^https?:\/\//, "")}
             </h1>
             <p className="mt-3 text-sm text-slate-500">
-              Generated {audit.generatedAt ? new Date(audit.generatedAt).toLocaleString() : "just now"}
+              Generated{" "}
+              {audit.generatedAt
+                ? new Date(audit.generatedAt).toLocaleString()
+                : "just now"}
             </p>
           </div>
 
@@ -365,7 +410,7 @@ export function ResultsPage() {
             </button>
 
             <button
-              onClick={() => navigate("/")}
+              onClick={rerunAudit}
               className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 text-sm font-bold text-white transition hover:bg-slate-800"
             >
               <RefreshCw className="h-4 w-4" />
@@ -411,7 +456,11 @@ export function ResultsPage() {
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3">
-                <span className={`inline-flex items-center rounded-full px-4 py-2 text-xs font-black uppercase tracking-[0.16em] ${getToneBadge(audit.scoreLabel)}`}>
+                <span
+                  className={`inline-flex items-center rounded-full px-4 py-2 text-xs font-black uppercase tracking-[0.16em] ${getToneBadge(
+                    audit.scoreLabel
+                  )}`}
+                >
                   {audit.scoreLabel}
                 </span>
                 <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-slate-700">
@@ -423,9 +472,18 @@ export function ResultsPage() {
               </div>
 
               <div className="mt-8 grid gap-4 md:grid-cols-3">
-                <SummaryPanel label="What’s working" value={executiveSummary.whatIsWorking} />
-                <SummaryPanel label="What’s hurting" value={executiveSummary.whatIsHurting} />
-                <SummaryPanel label="What to do first" value={executiveSummary.whatToDoFirst} />
+                <SummaryPanel
+                  label="What’s working"
+                  value={executiveSummary.whatIsWorking}
+                />
+                <SummaryPanel
+                  label="What’s hurting"
+                  value={executiveSummary.whatIsHurting}
+                />
+                <SummaryPanel
+                  label="What to do first"
+                  value={executiveSummary.whatToDoFirst}
+                />
               </div>
 
               {highlights.length > 0 ? (
@@ -439,8 +497,12 @@ export function ResultsPage() {
                         key={`${item.label}-${index}`}
                         className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
                       >
-                        <p className="text-sm font-bold text-slate-900">{item.label}</p>
-                        <p className="mt-1 text-sm text-slate-500">{item.description}</p>
+                        <p className="text-sm font-bold text-slate-900">
+                          {item.label}
+                        </p>
+                        <p className="mt-1 text-sm text-slate-500">
+                          {item.description}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -501,7 +563,13 @@ export function ResultsPage() {
                       strokeLinecap="round"
                     />
                     <defs>
-                      <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <linearGradient
+                        id="scoreGradient"
+                        x1="0%"
+                        y1="0%"
+                        x2="100%"
+                        y2="100%"
+                      >
                         <stop offset="0%" stopColor="#34d399" />
                         <stop offset="100%" stopColor="#22d3ee" />
                       </linearGradient>
@@ -518,7 +586,11 @@ export function ResultsPage() {
               </div>
 
               <div className="mt-6 flex justify-center">
-                <span className={`inline-flex rounded-full px-4 py-2 text-xs font-black uppercase tracking-[0.16em] ${getToneBadge(audit.scoreLabel)}`}>
+                <span
+                  className={`inline-flex rounded-full px-4 py-2 text-xs font-black uppercase tracking-[0.16em] ${getToneBadge(
+                    audit.scoreLabel
+                  )}`}
+                >
                   {audit.scoreLabel}
                 </span>
               </div>
@@ -543,8 +615,14 @@ export function ResultsPage() {
               <div className="mt-5 grid grid-cols-2 gap-4">
                 <DarkMetric label="Words" value={meta.wordCount ?? 0} />
                 <DarkMetric label="Images" value={meta.imageCount ?? 0} />
-                <DarkMetric label="Requests" value={performance.totalRequests ?? 0} />
-                <DarkMetric label="Page Size" value={`${performance.totalPageSizeMb ?? 0} MB`} />
+                <DarkMetric
+                  label="Requests"
+                  value={performance.totalRequests ?? 0}
+                />
+                <DarkMetric
+                  label="Page Size"
+                  value={`${performance.totalPageSizeMb ?? 0} MB`}
+                />
               </div>
             </div>
           </div>
@@ -593,13 +671,16 @@ export function ResultsPage() {
                 <div
                   className="h-full rounded-full bg-slate-950 transition-all duration-500"
                   style={{
-                    width: `${progressTotal > 0 ? (fixedCount / progressTotal) * 100 : 0}%`,
+                    width: `${
+                      progressTotal > 0 ? (fixedCount / progressTotal) * 100 : 0
+                    }%`,
                   }}
                 />
               </div>
 
               <p className="mt-4 text-sm text-slate-500">
-                {progressRemaining} issue{progressRemaining === 1 ? "" : "s"} remaining
+                {progressRemaining} issue{progressRemaining === 1 ? "" : "s"}{" "}
+                remaining
               </p>
             </div>
 
@@ -626,7 +707,7 @@ export function ResultsPage() {
 
               {retention?.canRerunAudit ? (
                 <button
-                  onClick={() => navigate("/")}
+                  onClick={rerunAudit}
                   className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-4 text-sm font-bold text-white transition hover:bg-slate-800"
                 >
                   <RefreshCw className="h-4 w-4" />
@@ -644,17 +725,29 @@ export function ResultsPage() {
 
             <div className="mt-6 grid gap-6 lg:grid-cols-2">
               <SpeedCard
-                title={speedContext?.userVisibleLoadTime?.label || "First visible content"}
+                title={
+                  speedContext?.userVisibleLoadTime?.label ||
+                  "First visible content"
+                }
                 value={speedContext?.userVisibleLoadTime?.value || "N/A"}
-                status={speedContext?.userVisibleLoadTime?.premiumStatus || "Not available"}
+                status={
+                  speedContext?.userVisibleLoadTime?.premiumStatus ||
+                  "Not available"
+                }
                 explanation={speedContext?.userVisibleLoadTime?.explanation}
                 percentile={speedContext?.userVisibleLoadTime?.percentileText}
                 highlight
               />
               <SpeedCard
-                title={speedContext?.estimatedFullLoadTime?.label || "Full page load"}
+                title={
+                  speedContext?.estimatedFullLoadTime?.label ||
+                  "Full page load"
+                }
                 value={speedContext?.estimatedFullLoadTime?.value || "N/A"}
-                status={speedContext?.estimatedFullLoadTime?.premiumStatus || "Not available"}
+                status={
+                  speedContext?.estimatedFullLoadTime?.premiumStatus ||
+                  "Not available"
+                }
                 explanation={speedContext?.estimatedFullLoadTime?.explanation}
                 percentile={speedContext?.estimatedFullLoadTime?.percentileText}
               />
@@ -665,7 +758,9 @@ export function ResultsPage() {
                 Plain-English explanation
               </p>
               <p className="mt-2 text-sm leading-7 text-indigo-900">
-                Users start seeing content when First visible content appears, but the full page can keep loading afterward because of scripts, large images, and background requests.
+                Users start seeing content when First visible content appears,
+                but the full page can keep loading afterward because of scripts,
+                large images, and background requests.
               </p>
             </div>
           </section>
@@ -676,21 +771,32 @@ export function ResultsPage() {
                 onClick={() => setShowDetailedAnalysis((v) => !v)}
                 className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700"
               >
-                {showDetailedAnalysis ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                {showDetailedAnalysis ? "Hide detailed analysis" : "View detailed analysis"}
+                {showDetailedAnalysis ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+                {showDetailedAnalysis
+                  ? "Hide detailed analysis"
+                  : "View detailed analysis"}
               </button>
 
               <button
                 onClick={() => setShowFullReport((v) => !v)}
                 className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700"
               >
-                {showFullReport ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                {showFullReport ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
                 {showFullReport ? "Hide full report" : "Show full report"}
               </button>
             </div>
 
             <p className="mt-4 text-sm text-slate-500">
-              Summary, score, and top fixes stay visible first. Detailed sections are collapsed by default to keep the report easy to scan.
+              Summary, score, and top fixes stay visible first. Detailed sections
+              are collapsed by default to keep the report easy to scan.
             </p>
           </section>
 
@@ -705,7 +811,11 @@ export function ResultsPage() {
                 <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                   {performanceMetrics.length > 0 ? (
                     performanceMetrics.map((metric) => (
-                      <MetricCard key={metric.key} metric={metric} getMetricStatusStyles={getMetricStatusStyles} />
+                      <MetricCard
+                        key={metric.key}
+                        metric={metric}
+                        getMetricStatusStyles={getMetricStatusStyles}
+                      />
                     ))
                   ) : (
                     <EmptyCard text="No performance metrics available." />
@@ -737,9 +847,21 @@ export function ResultsPage() {
                 </div>
 
                 <div className="mt-8 grid gap-8 lg:grid-cols-3">
-                  <CheckGroup title="Fundamentals" items={groupedChecks.fundamentals || []} getCheckVisuals={getCheckVisuals} />
-                  <CheckGroup title="Trust & content" items={groupedChecks.trustAndContent || []} getCheckVisuals={getCheckVisuals} />
-                  <CheckGroup title="Technical" items={groupedChecks.technical || []} getCheckVisuals={getCheckVisuals} />
+                  <CheckGroup
+                    title="Fundamentals"
+                    items={groupedChecks.fundamentals || []}
+                    getCheckVisuals={getCheckVisuals}
+                  />
+                  <CheckGroup
+                    title="Trust & content"
+                    items={groupedChecks.trustAndContent || []}
+                    getCheckVisuals={getCheckVisuals}
+                  />
+                  <CheckGroup
+                    title="Technical"
+                    items={groupedChecks.technical || []}
+                    getCheckVisuals={getCheckVisuals}
+                  />
                 </div>
               </section>
             </>
@@ -755,15 +877,26 @@ export function ResultsPage() {
               <div className="mt-8 grid gap-6 lg:grid-cols-2">
                 {recommendations.length > 0 ? (
                   recommendations.map((item) => (
-                    <div key={item.id} className="rounded-[30px] bg-slate-50 p-7">
+                    <div
+                      key={item.id}
+                      className="rounded-[30px] bg-slate-50 p-7"
+                    >
                       <div className="flex flex-wrap gap-2">
-                        <span className={`rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] ${getSeverityBadge(item.severity)}`}>
+                        <span
+                          className={`rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] ${getSeverityBadge(
+                            item.severity
+                          )}`}
+                        >
                           {item.severity}
                         </span>
                         <span className="rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] bg-indigo-50 text-indigo-700 border border-indigo-200">
                           {item.category}
                         </span>
-                        <span className={`rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] ${getEffortBadge(item.effort)}`}>
+                        <span
+                          className={`rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] ${getEffortBadge(
+                            item.effort
+                          )}`}
+                        >
                           {item.effort} effort
                         </span>
                         {item.tag ? (
@@ -877,6 +1010,10 @@ export function ResultsPage() {
         />
       ) : null}
     </div>
+    {/* website footer added here  */}
+    <Footer />
+    {/* Website footer end here  */}
+    </>
   );
 }
 
@@ -934,13 +1071,17 @@ function PriorityRow({ item, index, onFix, onToggleFixed, isFixed }) {
 
         <div className="flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className={`rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] ${severityClass}`}>
+            <span
+              className={`rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] ${severityClass}`}
+            >
               {item.severity}
             </span>
             <span className="rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] bg-indigo-50 text-indigo-700 border border-indigo-200">
               {item.category}
             </span>
-            <span className={`rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] ${effortClass}`}>
+            <span
+              className={`rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] ${effortClass}`}
+            >
               {item.effort} effort
             </span>
             {typeof item.estimatedScoreImprovement === "number" ? (
@@ -953,7 +1094,9 @@ function PriorityRow({ item, index, onFix, onToggleFixed, isFixed }) {
           <div className="mt-4 space-y-3">
             <p className="text-lg font-black text-slate-950">{item.problem}</p>
             <p className="text-sm leading-7 text-slate-600">{item.impact}</p>
-            <p className="text-sm font-semibold leading-7 text-slate-800">{item.fix}</p>
+            <p className="text-sm font-semibold leading-7 text-slate-800">
+              {item.fix}
+            </p>
           </div>
 
           <div className="mt-5 flex flex-wrap gap-2">
@@ -982,7 +1125,14 @@ function PriorityRow({ item, index, onFix, onToggleFixed, isFixed }) {
   );
 }
 
-function SpeedCard({ title, value, status, explanation, percentile, highlight = false }) {
+function SpeedCard({
+  title,
+  value,
+  status,
+  explanation,
+  percentile,
+  highlight = false,
+}) {
   return (
     <div
       className={`rounded-[28px] border p-6 ${
@@ -1012,7 +1162,9 @@ function MetricCard({ metric, getMetricStatusStyles }) {
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <p className="text-lg font-black text-slate-950">{metric.shortLabel}</p>
+            <p className="text-lg font-black text-slate-950">
+              {metric.shortLabel}
+            </p>
             <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-slate-600 border border-slate-200">
               {metric.tag}
             </span>
@@ -1020,14 +1172,18 @@ function MetricCard({ metric, getMetricStatusStyles }) {
           <p className="mt-2 text-sm text-slate-500">{metric.label}</p>
         </div>
 
-        <span className={`inline-flex rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] ${styles.badge}`}>
+        <span
+          className={`inline-flex rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] ${styles.badge}`}
+        >
           {metric.premiumStatus}
         </span>
       </div>
 
       <p className="mt-5 text-3xl font-black text-slate-950">{metric.value}</p>
       {metric.percentileText ? (
-        <p className="mt-2 text-sm font-semibold text-slate-700">{metric.percentileText}</p>
+        <p className="mt-2 text-sm font-semibold text-slate-700">
+          {metric.percentileText}
+        </p>
       ) : null}
 
       <div className="mt-5 space-y-3">
@@ -1035,14 +1191,18 @@ function MetricCard({ metric, getMetricStatusStyles }) {
           <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">
             Tooltip
           </p>
-          <p className="mt-1 text-sm leading-6 text-slate-600">{metric.tooltip}</p>
+          <p className="mt-1 text-sm leading-6 text-slate-600">
+            {metric.tooltip}
+          </p>
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
           <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">
             Interpretation
           </p>
-          <p className="mt-1 text-sm leading-6 text-slate-600">{metric.explanation}</p>
+          <p className="mt-1 text-sm leading-6 text-slate-600">
+            {metric.explanation}
+          </p>
         </div>
       </div>
     </div>
@@ -1120,7 +1280,9 @@ function CheckGroup({ title, items, getCheckVisuals }) {
                 </div>
               </div>
 
-              <div className={`mt-4 inline-flex rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] ${visuals.badge}`}>
+              <div
+                className={`mt-4 inline-flex rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] ${visuals.badge}`}
+              >
                 {visuals.label}
               </div>
             </div>
@@ -1216,11 +1378,14 @@ function FixIssueModal({ issue, onClose, onToggleFixed, isFixed }) {
 
           <div className="grid gap-4 md:grid-cols-2">
             <ModalPanel title="Expected impact">
-              {fixDetails.expectedImpact || issue.estimatedEffect || "Not available"}
+              {fixDetails.expectedImpact ||
+                issue.estimatedEffect ||
+                "Not available"}
             </ModalPanel>
 
             <ModalPanel title="Estimated score improvement">
-              +{fixDetails.estimatedScoreImprovement ?? issue.scoreImpact ?? 0} points
+              +{fixDetails.estimatedScoreImprovement ?? issue.scoreImpact ?? 0}{" "}
+              points
             </ModalPanel>
           </div>
         </div>
