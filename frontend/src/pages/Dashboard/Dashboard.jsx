@@ -16,8 +16,8 @@ import AuditHistory from "../AuditHistory/AuditHistory";
 import { PricingPage } from "../Pricing/PricingPage";
 import Settings from "../Settings/Settings";
 
-const API_URL = "http://localhost:5000";
-// const API_URL = import.meta.env.VITE_API_URL;
+// const API_URL = "http://localhost:5000";
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Sidebar = ({ activePage, setActivePage, userRole }) => {
   const menuItems = [
