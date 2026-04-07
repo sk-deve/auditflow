@@ -46,7 +46,7 @@ export default function Header() {
             Sign in
           </a>
           <a
-            href="/contact"
+            href="/signup"
             className="relative inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-slate-800 hover:ring-4 hover:ring-slate-900/10 active:scale-95"
           >
             Get Started

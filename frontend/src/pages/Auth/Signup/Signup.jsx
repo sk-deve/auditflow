@@ -9,9 +9,9 @@ import {
   Shield,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import api from "../../lib/api"
-import Header from "../../components/Header/Header";
-import { Footer } from "../../components/Footer/Footer";
+import api from "../../../lib/api"
+import Header from "../../../components/Header/Header";
+import { Footer } from "../../../components/Footer/Footer";
 
 export function SignupPage() {
   const navigate = useNavigate();

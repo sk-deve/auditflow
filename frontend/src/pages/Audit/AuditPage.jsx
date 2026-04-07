@@ -231,14 +231,14 @@ export function RunAuditPage() {
 
                   <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                     <button
-                      onClick={() => navigate("/login")}
+                      onClick={() => navigate("/signin")}
                       className="inline-flex w-full items-center justify-center rounded-2xl bg-slate-950 px-6 py-4 text-sm font-bold text-white transition hover:bg-slate-800"
                     >
                       Log In
                     </button>
 
                     <button
-                      onClick={() => navigate("/register")}
+                      onClick={() => navigate("/signup")}
                       className="inline-flex w-full items-center justify-center rounded-2xl bg-indigo-600 px-6 py-4 text-sm font-bold text-white transition hover:bg-indigo-700"
                     >
                       Create Free Account

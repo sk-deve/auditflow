@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Globe, Mail, Lock, ArrowRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import api from "../../lib/api"
-import { Footer } from "../../components/Footer/Footer";
-import Header from "../../components/Header/Header";
+import api from "../../../lib/api"
+import { Footer } from "../../../components/Footer/Footer";
+import Header from "../../../components/Header/Header";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -85,7 +85,7 @@ export function LoginPage() {
                 Password
               </label>
               <a
-                href="#"
+                href="/forgot-password"
                 className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-700"
               >
                 Forgot?

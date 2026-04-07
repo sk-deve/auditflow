@@ -13,7 +13,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import Overview from "../Overview/Overview";
 import AuditHistory from "../AuditHistory/AuditHistory";
-import { PricingPage } from "../Pricing/PricingPage";
+import { PricingPage } from "../../Pricing/PricingPage";
 import Settings from "../Settings/Settings";
 
 // const API_URL = "http://localhost:5000";
@@ -186,7 +186,7 @@ export function Dashboard() {
       const token = getAuthToken();
 
       if (!token) {
-        navigate("/login");
+        navigate("/signin");
         return;
       }
 
@@ -248,7 +248,7 @@ export function Dashboard() {
     localStorage.removeItem("token");
     localStorage.removeItem("authToken");
     localStorage.removeItem("accessToken");
-    navigate("/login");
+    navigate("/signin");
   }
 
   function handleNewAudit() {
