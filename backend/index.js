@@ -12,16 +12,27 @@ const User = require("./models/User");
 const app = express();
 const PORT = 5000;
 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:5000",
-       process.env.CLIENT_URL,
-    ],
-    credentials: true,
-  })
-);
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://auditflow-xi.vercel.app",
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 app.use(express.json({ limit: "5mb" }));
 dotenv.config();
 // database added here ==============
