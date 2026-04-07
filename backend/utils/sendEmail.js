@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
 
 async function sendEmail({ to, subject, html }) {
   await transporter.sendMail({
-    from: `"AuditFlow" <${process.env.EMAIL_FROM}>`,
+    from: `"AuditFlow" <${process.env.MAIL_FROM}>`,
     to,
     subject,
     html,

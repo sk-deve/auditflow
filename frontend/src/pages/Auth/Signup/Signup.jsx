@@ -184,7 +184,7 @@ export function SignupPage() {
 
             <p className="mt-8 text-center text-sm font-bold text-slate-500">
               Already have an account?{" "}
-              <Link to="/login" className="text-indigo-600 hover:underline">
+              <Link to="/signin" className="text-indigo-600 hover:underline">
                 Log in
               </Link>
             </p>
